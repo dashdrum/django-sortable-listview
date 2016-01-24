@@ -5,6 +5,7 @@ try:
     from urlparse import urlparse, parse_qs
 except ImportError:
     from urllib.parse import urlencode, urlparse, parse_qs
+from collections import OrderedDict
 
 from django.views.generic import ListView
 
@@ -13,7 +14,8 @@ class SortableListView(ListView):
     # Defaults, you probably want to specify these when you subclass
     default_sort_field = 'id'
     allowed_sort_fields = {default_sort_field: {'default_direction': '-',
-                                                'verbose_name': 'ID'}}
+                                                'verbose_name': 'ID'},
+                                                'order': 1}
     sort_parameter = 'sort'  # the get parameter e.g. ?page=1&sort=2
     del_query_parameters = ['page']  # get paramaters we don't want to preserve
     # End of Defaults
@@ -132,7 +134,8 @@ class SortableListView(ListView):
 
     def get_sort_link_list(self, request):
         sort_links = []
-        for sort_field in self.allowed_sort_fields:
+        ordered_allowed_sort_fields = OrderedDict(sorted(self.allowed_sort_fields.items(), key=lambda t: t[1]['order']))
+        for sort_field in ordered_allowed_sort_fields:
             sort_link = {
                 'attrs': sort_field,
                 'path': self.get_basic_sort_link(request, sort_field),
